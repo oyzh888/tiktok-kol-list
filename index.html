@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TikTok KOL List — 3/14</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f0f0f;
+      color: #e8e8e8;
+      min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      padding: 32px 40px 24px;
+      border-bottom: 1px solid #2a2a4a;
+    }
+    header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    header h1 span.tag {
+      font-size: 14px;
+      background: #fe2c55;
+      color: #fff;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .stats-row {
+      display: flex;
+      gap: 20px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 10px 20px;
+      text-align: center;
+    }
+    .stat-card .num { font-size: 22px; font-weight: 700; color: #69c0ff; }
+    .stat-card .lbl { font-size: 11px; color: #aaa; margin-top: 2px; }
+
+    .controls {
+      padding: 20px 40px;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+      background: #141414;
+      border-bottom: 1px solid #222;
+    }
+    .controls input[type=text] {
+      padding: 9px 16px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #1e1e1e;
+      color: #e8e8e8;
+      font-size: 14px;
+      width: 260px;
+      outline: none;
+    }
+    .controls input[type=text]:focus { border-color: #fe2c55; }
+    .controls select {
+      padding: 9px 14px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #1e1e1e;
+      color: #e8e8e8;
+      font-size: 14px;
+      outline: none;
+      cursor: pointer;
+    }
+    .controls label { font-size: 13px; color: #aaa; }
+    .controls .count-badge {
+      margin-left: auto;
+      background: #222;
+      border: 1px solid #333;
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 13px;
+      color: #aaa;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      padding: 24px 40px 60px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+    thead th {
+      background: #1a1a2e;
+      color: #9ba8c0;
+      font-weight: 600;
+      text-align: left;
+      padding: 11px 14px;
+      border-bottom: 2px solid #2a2a4a;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      position: sticky;
+      top: 0;
+    }
+    thead th:hover { color: #69c0ff; }
+    thead th .sort-icon { font-size: 11px; margin-left: 4px; opacity: 0.5; }
+    thead th.sorted { color: #69c0ff; }
+    thead th.sorted .sort-icon { opacity: 1; }
+
+    tbody tr {
+      border-bottom: 1px solid #1f1f1f;
+      transition: background 0.15s;
+    }
+    tbody tr:hover { background: #1a1a2e; }
+
+    td { padding: 10px 14px; vertical-align: middle; }
+
+    .handle a {
+      color: #fe2c55;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .handle a:hover { text-decoration: underline; }
+
+    .name-cell { max-width: 180px; }
+    .name-main { font-weight: 600; color: #e8e8e8; font-size: 13px; }
+    .name-bio { font-size: 11px; color: #888; margin-top: 2px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .num-cell { text-align: right; font-variant-numeric: tabular-nums; }
+    .followers { color: #b7eb8f; }
+    .avg-views { color: #91caff; }
+    .last-post { color: #ffd666; }
+
+    .email-link { color: #95de64; text-decoration: none; font-size: 12px; }
+    .email-link:hover { text-decoration: underline; }
+    .no-email { color: #444; font-size: 12px; }
+
+    .score-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 13px;
+      min-width: 38px;
+      text-align: center;
+    }
+    .score-90  { background: #162312; color: #73d13d; border: 1px solid #389e0d; }
+    .score-80  { background: #162312; color: #95de64; border: 1px solid #52c41a; }
+    .score-70  { background: #1d2c0f; color: #b7eb8f; border: 1px solid #73d13d; }
+    .score-60  { background: #2a1f07; color: #ffd666; border: 1px solid #d48806; }
+    .score-50  { background: #2a1b07; color: #ffa940; border: 1px solid #d46b08; }
+    .score-30  { background: #1f1414; color: #ff7875; border: 1px solid #cf1322; }
+    .score-0   { background: #1a1a1a; color: #555; border: 1px solid #333; }
+
+    .titles-cell { max-width: 280px; }
+    .title-tag {
+      display: inline-block;
+      background: #1e2a3a;
+      border: 1px solid #2a3a5a;
+      border-radius: 6px;
+      padding: 2px 7px;
+      font-size: 11px;
+      color: #7ab5e8;
+      margin: 2px 2px 2px 0;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+    .empty { color: #444; font-size: 12px; }
+
+    .no-results {
+      text-align: center;
+      padding: 60px 20px;
+      color: #555;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📱 TikTok KOL List <span class="tag">3/14</span></h1>
+  <div class="stats-row" id="statsRow"></div>
+</header>
+
+<div class="controls">
+  <input type="text" id="searchInput" placeholder="🔍  Search name, handle, bio…" oninput="applyFilter()" />
+  <label>Min Score:</label>
+  <select id="minScore" onchange="applyFilter()">
+    <option value="0">All</option>
+    <option value="30">30+</option>
+    <option value="50">50+</option>
+    <option value="60">60+</option>
+    <option value="70">70+</option>
+    <option value="80">80+</option>
+    <option value="90">90+</option>
+  </select>
+  <label>Has Email:</label>
+  <select id="emailFilter" onchange="applyFilter()">
+    <option value="">All</option>
+    <option value="yes">With Email</option>
+    <option value="no">No Email</option>
+  </select>
+  <span class="count-badge" id="countBadge">— creators</span>
+</div>
+
+<div class="table-wrap">
+  <table id="mainTable">
+    <thead>
+      <tr>
+        <th onclick="sortBy('handle')">Handle <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('name')">Name / Bio <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('followers')" class="num-cell">Followers <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('avg_views')" class="num-cell">Avg Views <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('last_post_days')" class="num-cell">Last Post <span class="sort-icon">↕</span></th>
+        <th>Email</th>
+        <th>Sample Titles</th>
+        <th onclick="sortBy('score_total')" class="num-cell">Score <span class="sort-icon">↕</span></th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+  <div class="no-results" id="noResults" style="display:none">No creators match your filters.</div>
+</div>
+
+<script>
+const RAW = [
+  {"handle":"@willfrancis24","name":"Will Francis - AI + Marketing","url":"https://www.tiktok.com/@willfrancis24","followers":162300,"avg_views":28550,"last_post_days":1,"email":"collab@willfrancis.com","bio":"⚡️ Learn AI + Digital Marketing ✉️ collab@willfrancis.com","titles":["NEW Claude feature - diagrams and charts in chats","5 things to do when you start using Claude","Is AI making work easier or harder?"],"score":90},
+  {"handle":"@john.tagudin","name":"John Tagudin | Creator Tools","url":"https://www.tiktok.com/@john.tagudin","followers":182700,"avg_views":28100,"last_post_days":4,"email":"john@johntagudin.com","bio":"i make quick tutorials for AI creative tools, saas, tech & video editing","titles":["This is how i turn simple product photo into Viral Realistic 3D Float...","people are making money from gaming clips","stop manually cutting podcasts into shorts"],"score":90},
+  {"handle":"@nate.b.jones","name":"Nate","url":"https://www.tiktok.com/@nate.b.jones","followers":476200,"avg_views":56800,"last_post_days":1,"email":"natoe@slogansocial.com","bio":"Product graybeard w/ 🧭 for the AI maze","titles":["CEOs who made decisions off vibes are already rehiring","The grief is real. #ai #chatgpt","Rough. I've done this kind of thing too. #ai #chatgpt"],"score":90},
+  {"handle":"@harpercarrollai","name":"Harper Carroll AI | Expert Ed","url":"https://www.tiktok.com/@harpercarrollai","followers":62100,"avg_views":5770,"last_post_days":2,"email":"partnerships@harpercarrollai.com","bio":"AI Explained. ~10 years building AI & ML @Stanford @Meta","titles":["NY Senate Bill S7263","How are new AI models compared?","If you watch one video about AI, let it be this one."],"score":70},
+  {"handle":"@tiffintech","name":"Tiff in Tech","url":"https://www.tiktok.com/@tiffintech","followers":322100,"avg_views":18450,"last_post_days":4,"email":"firesidecoffee@yahoo.com","bio":"Future Tech | AI | Robotics","titles":["Moore's Law didn't die but it might've backfired","The fastest AI chips in the world spend most of their time waiting","Google connected 9,216 AI chips not with traditional electrical signals"],"score":75},
+  {"handle":"@rpn","name":"Roberto Nickson","url":"https://www.tiktok.com/@rpn","followers":449300,"avg_views":127750,"last_post_days":null,"email":"mailsonjuniorpj@gmail.com","bio":"Keeping you a step ahead on future tech · Newsletter: www.rpn.biz","titles":["Perplexity just reinvented the computer","Everybody's talking about Claude Code but I'm surprised at how little...","Luma's new creative agents are a huge leap forward"],"score":80},
+  {"handle":"@kanekallaway","name":"Kallaway","url":"https://www.tiktok.com/@kanekallaway","followers":407800,"avg_views":9566,"last_post_days":1,"email":"kallaway@wavylabs.co","bio":"Tech & AI — Helping you stay ahead in the AI era","titles":["These drone flythrough shots are super easy to create","This is the future of creative work #ai #techtok","These 3D posters are a cheat code for cutting through the feed"],"score":60},
+  {"handle":"@aicenturyclips","name":"AI Century","url":"https://www.tiktok.com/@aicenturyclips","followers":428800,"avg_views":21250,"last_post_days":1,"email":"Aicenturyinfo@gmail.com","bio":"Follow my other twin brother @InsidersAI 📩","titles":["How To Make Time Travel Vlogs With AI","How To Make POV Animal Camera Videos With AI","How to make viral horror series with AI"],"score":70},
+  {"handle":"@insidersai","name":"InsidersAI","url":"https://www.tiktok.com/@insidersai","followers":198900,"avg_views":10146,"last_post_days":1,"email":"theinsidersai@gmail.com","bio":"We help creators master AI","titles":["Here is how to make time travel vlogs","Here is how to create viral pool restoration timelapse videos","How to create talking food videos"],"score":75},
+  {"handle":"@evhandd","name":"Evan | AI For Content","url":"https://www.tiktok.com/@evhandd","followers":249900,"avg_views":0,"last_post_days":1,"email":null,"bio":"🤖AI For Content That Sells 📈2B+ Views on Social Media","titles":["AI is getting ABSOLUTELY INSANE - built an AI agent for content strategy","How AI automation for social media really works #n8n","This woman gained 65K followers using AI"],"score":75},
+  {"handle":"@askcatgpt","name":"CatGPT (Catherine Goetze)","url":"https://www.tiktok.com/@askcatgpt","followers":526800,"avg_views":0,"last_post_days":1,"email":"catgpt@smoothmedia.co","bio":"🌱 I break down AI and help you get off your phone. Founder @physicalphones","titles":["First-ever OpenAI Creator Takeover on TikTok","AI and society future of content creators","Breaking down AI for everyday use"],"score":78},
+  {"handle":"@followmario","name":"Mario | Marketing Brand & AI","url":"https://www.tiktok.com/@followmario","followers":200700,"avg_views":0,"last_post_days":1,"email":"mario@followmario.com","bio":"marketing business & AI creator / B2B marketing strategies with AI tools","titles":["You have to check out Gamma AI","Marketing inspo with AI","AI tools for B2B marketing brands"],"score":72},
+  {"handle":"@tony.aube","name":"Tony Aubé","url":"https://www.tiktok.com/@tony.aube","followers":426700,"avg_views":8085,"last_post_days":2,"email":"hello@tonyaube.com","bio":"🎨 Designer in Silicon Valley 👨🏻‍💻 Ex Google AI","titles":["ChatGPT is about to have more money than Google and Apple combined","Why they are killing TikTok","They are working overtime this week"],"score":60},
+  {"handle":"@nomadatoast","name":"Jo Mendes","url":"https://www.tiktok.com/@nomadatoast","followers":321200,"avg_views":3182,"last_post_days":1,"email":"hi@nomadatoast.com","bio":"Creative Tech Tips & AI tools ✉️ hi@nomadatoast.com 💥 450K on IG","titles":["Its like a mix of editable Pinterest with AI tools","get Free Nano Banana 2 and to generate crisp studio set ups","create a bolt camera video edit using one photo"],"score":50},
+  {"handle":"@teach2ai","name":"Sophie | AI Education","url":"https://www.tiktok.com/@teach2ai","followers":101700,"avg_views":14900,"last_post_days":13,"email":"Hwgenie@proton.me","bio":"Teaching you how to AI","titles":["Bare minimum or princess treatment?","Is this too niche? #advertising #marketing","To think I bought my last pair of Rags from Aritzia"],"score":65},
+  {"handle":"@shedoesai","name":"Gunhild Johanne Reumert","url":"https://www.tiktok.com/@shedoesai","followers":223200,"avg_views":3717,"last_post_days":4,"email":"hello@shedoesai.com","bio":"🛠️ FREE AI Newsletter & list of AI tools","titles":["Comment 'Arcads' & I'll send it over","Thank you for the gift @ChatGPT @OpenAI","Comment 'Clone' & I'll send it over — I built an AI influencer app"],"score":50},
+  {"handle":"@smartworkai","name":"Celia | AI Education & Tips","url":"https://www.tiktok.com/@smartworkai","followers":153400,"avg_views":1082,"last_post_days":1,"email":"mysmartworkai@gmail.com","bio":"Making AI Easy for All","titles":["ChatGPT fail: The car wash problem","Best AI for interior design projects","What everyone is getting wrong about ChatGPT"],"score":50},
+  {"handle":"@immadsal","name":"MadSal (Madeline Salazar)","url":"https://www.tiktok.com/@immadsal","followers":176100,"avg_views":1444,"last_post_days":2,"email":"immadsal@dulcedo.com","bio":"AI Expert Photoshop Expert Satire Comedian 📍SD","titles":["What's on your shuffle?","Lil recovery day in my life","Follow for the best AI editing tools"],"score":50},
+  {"handle":"@jessicam.reid","name":"Jessicam.Reid","url":"https://www.tiktok.com/@jessicam.reid","followers":43300,"avg_views":1178,"last_post_days":2,"email":"jessica@simplemondays.ca","bio":"Making teaching life simpler 🌸 founder of @simple.mondays","titles":["Turn an educational YouTube video into a lesson in under a minute!","Type B teachers deserve systems that work with their brains","20 mins of work in 2 minutes"],"score":50},
+  {"handle":"@mindgrasp.ai","name":"Mindgrasp.ai","url":"https://www.tiktok.com/@mindgrasp.ai","followers":99400,"avg_views":9422,"last_post_days":170,"email":"contact@mindgrasp.ai","bio":"Mindgrasp is the World's #1 Ai Learning Tool","titles":["Brainmaxxing made easy","You got time scammed! Canvas, Blackboard & Panopto widget","go from notes to knowledge without caffeine"],"score":50},
+  {"handle":"@sineadbovell","name":"Sinead Bovell","url":"https://www.tiktok.com/@sineadbovell","followers":311500,"avg_views":3713,"last_post_days":1,"email":"bove6880@mylaurier.ca","bio":"Futurist WAYE Founder 🎥Tech commentator 🇨🇦","titles":["Why do AI chatbots often end a response with another question","AI is already transforming work and who gets hired","AI in classrooms is often discussed through the lens of cheating"],"score":50},
+  {"handle":"@englishwithemma_","name":"Teacher Emma","url":"https://www.tiktok.com/@englishwithemma_","followers":279000,"avg_views":8453,"last_post_days":11,"email":"englishwithemma01@gmail.com","bio":"British English Teacher 🇬🇧 Helping you speak English with confidence","titles":["Think in Claude, and show using Gamma!","Calling all Business owners with international Clients","Asking to Charge your Phone 📲"],"score":50},
+  {"handle":"@aisavvy","name":"Victor C","url":"https://www.tiktok.com/@aisavvy","followers":128300,"avg_views":2435,"last_post_days":null,"email":"mark.shi.creators@gmail.com","bio":"AI Tools & Tutorials · Asia partnerships","titles":["It's actually insane that this only took me 10 minutes","Zopia is a new AI film agent","Here are 5 cool applications for Nano Banana 2"],"score":30},
+  {"handle":"@stephengpope","name":"AI Automation","url":"https://www.tiktok.com/@stephengpope","followers":198600,"avg_views":9703,"last_post_days":null,"email":"stephen@sgplabs.com","bio":"Learn AI automation and make $10k+/month · no-code-architects.dev","titles":[],"score":40},
+  {"handle":"@brandnat","name":"Brand Nat | AI Automation","url":"https://www.tiktok.com/@brandnat","followers":438000,"avg_views":5556,"last_post_days":null,"email":"hello@brandnat.com","bio":"AI Automation Tech for Business · Join 850K+ biz","titles":["Claude Code for Business - Part 1","Fun creating visuals in Claude","Crazy private tour at @Microsoft headquarters"],"score":40},
+  {"handle":"@mr.paidsocial","name":"Caleb | Ads | Ai | Automation","url":"https://www.tiktok.com/@mr.paidsocial","followers":183100,"avg_views":1650,"last_post_days":2,"email":"calebdigitalmgmt@gmail.com","bio":"11+ Years Paid Social $150+ MM Ad Spend","titles":["Do you agree?","This new ai agent is basically vibe coding but for ai images","This Meta Ai Agent is insane"],"score":50},
+  {"handle":"@rajistics","name":"Rajiv Shah | data science & AI","url":"https://www.tiktok.com/@rajistics","followers":30800,"avg_views":1091,"last_post_days":2,"email":null,"bio":"Explaining data science 🚀 Agent Engineering at OpenHands","titles":["Don't fall for the latest schema formats","LLMs write one token at a time","The hidden system prompt often shapes an AI agent"],"score":50},
+  {"handle":"@sundaskhalidd","name":"Sundas Khalid","url":"https://www.tiktok.com/@sundaskhalidd","followers":69900,"avg_views":2591,"last_post_days":null,"email":"hi@sundaskhalid.com","bio":"Machine learning explained in simple terms","titles":["Machine learning explained in simple terms #ml #ai #datascience"],"score":30},
+  {"handle":"@morgandebaun","name":"morgandebaun","url":"https://www.tiktok.com/@morgandebaun","followers":88400,"avg_views":2338,"last_post_days":null,"email":"M@morgandebaun.com","bio":"AI is everywhere now. But very few people are discussing the real risks.","titles":["ai influencers will be taking over our feeds in 2026"],"score":30},
+  {"handle":"@justinfineberg","name":"justinfineberg","url":"https://www.tiktok.com/@justinfineberg","followers":207200,"avg_views":3916,"last_post_days":null,"email":"kikomilanocollaborations@gmail.com","bio":"First and most simple automation to build with AI","titles":["Here's the first, and most simple, automation to build with AI"],"score":30},
+  {"handle":"@gianluca.mauro","name":"Gianluca Mauro","url":"https://www.tiktok.com/@gianluca.mauro","followers":172100,"avg_views":4380,"last_post_days":31,"email":null,"bio":"AI entrepreneur · 10+ years of no-B.S. execution","titles":["Here's why AI innovation is speeding up","OpenAI's biggest challenge","Let's clarify some stuff about the social media for ai agents Moltboo..."],"score":35},
+  {"handle":"@dave_preneur","name":"dave_preneur","url":"https://www.tiktok.com/@dave_preneur","followers":213100,"avg_views":3190,"last_post_days":169,"email":"Dave.jorgenson@LNI.media","bio":"Free Faceless Guide · Join 650+ Member Faceless Community","titles":["You don't need Ai to create faceless content","Getting paid for views is not a consistent enough income","consistency is the new lie. Good content will always beat it"],"score":30},
+  {"handle":"@professorcasey","name":"Professor Casey Fiesler","url":"https://www.tiktok.com/@professorcasey","followers":120000,"avg_views":2612,"last_post_days":null,"email":"casey.fiesler@colorado.edu","bio":"Information Science Prof. PhD/JD. AI ethics. Tech policy.","titles":["What is AI emergence? Part 6","It's been AGES since I've done a tech ethics book rec song","Replying to @A — instruction tuning! Part 7"],"score":30},
+  {"handle":"@drtylertarver","name":"Dr. Tyler Tarver","url":"https://www.tiktok.com/@drtylertarver","followers":191200,"avg_views":1312,"last_post_days":null,"email":"amanda@tarveracademy.com","bio":"saving teachers time with AI · speaker | author","titles":["should teachers and students use ChatGPT?","This has to be from Stand and Deliver 😂","how to make your classroom more ADA friendly!"],"score":30},
+  {"handle":"@byrvm_contentcreation","name":"BYRVM | Viral Content Creation","url":"https://www.tiktok.com/@byrvm_contentcreation","followers":383000,"avg_views":1277,"last_post_days":null,"email":"hello@byrvm.com","bio":"Editing tutorials & AI Tools","titles":["This is the Demolish & Rebuild Effect","This edit is called the Gilmore Shot","Comment PROMPT and I'll send you the exact setup"],"score":30},
+  {"handle":"@joyfulnoiseteaching","name":"Emily","url":"https://www.tiktok.com/@joyfulnoiseteaching","followers":170700,"avg_views":916,"last_post_days":null,"email":"joyfulnoiseteaching@gmail.com","bio":"Following Jesus ✨ Click below FREEBIES","titles":["Teachers, this tool is a best-kept secret","Busy mom of 3 — how I get everything done before 7am","The Google Slides tip I wish someone told me sooner"],"score":30},
+  {"handle":"@thechriswinfield","name":"Chris Winfield","url":"https://www.tiktok.com/@thechriswinfield","followers":121000,"avg_views":307,"last_post_days":1,"email":null,"bio":"🤖 AI in 90 seconds or less each day!","titles":["One guy ran the entire growth marketing for a $380 billion company","One sentence just replaced your entire prompt","Facebook just bought a social network where only AI bots can post"],"score":30},
+  {"handle":"@iamkylebalmer","name":"iamkylebalmer","url":"https://www.tiktok.com/@iamkylebalmer","followers":166400,"avg_views":1604,"last_post_days":null,"email":null,"bio":"Get my FREE 5 Day AI Readiness course | Join 250,000 learners","titles":[],"score":10},
+  {"handle":"@gen.ai.master","name":"Gen AI Master","url":"https://www.tiktok.com/@gen.ai.master","followers":12000,"avg_views":76100,"last_post_days":null,"email":null,"bio":"Gen AI Master","titles":[],"score":70},
+  {"handle":"@digitalmediastrategy","name":"Kat - Digital Media Strategist","url":"https://www.tiktok.com/@digitalmediastrategy","followers":57900,"avg_views":4411,"last_post_days":null,"email":null,"bio":"Chat GPT: Accelerate your Success","titles":[],"score":20},
+  {"handle":"@techwithhelen","name":"AI | Tech | Productivity","url":"https://www.tiktok.com/@techwithhelen","followers":20600,"avg_views":393,"last_post_days":null,"email":"ntechandaiwithhelen@gmail.com","bio":"Explore AI tools that boost productivity","titles":[],"score":30},
+  {"handle":"@tech_with_tim","name":"Tim Ruscica","url":"https://www.tiktok.com/@tech_with_tim","followers":17100,"avg_views":608,"last_post_days":null,"email":"techwithtim@viralnationtalent.com","bio":"Programming, tech, business. Want to get started in coding?","titles":[],"score":30},
+  {"handle":"@mason.automate","name":"Mason Anderson","url":"https://www.tiktok.com/@mason.automate","followers":40700,"avg_views":478,"last_post_days":null,"email":"mason@automatewhat.com","bio":"AI agents for businesses. I build them, you profit.","titles":[],"score":30},
+  {"handle":"@harshathementor","name":"Harsha Tambareni","url":"https://www.tiktok.com/@harshathementor","followers":405600,"avg_views":0,"last_post_days":null,"email":null,"bio":"Helping You Scale Your Business with AI","titles":[],"score":0},
+  {"handle":"@andyhafell","name":"Andy Hafell","url":"https://www.tiktok.com/@andyhafell","followers":227800,"avg_views":0,"last_post_days":null,"email":null,"bio":"AI Agents & Automation tools educator | Try Infactory AI","titles":[],"score":0},
+  {"handle":"@the.rachel.woods","name":"Rachel Woods","url":"https://www.tiktok.com/@the.rachel.woods","followers":169300,"avg_views":0,"last_post_days":null,"email":null,"bio":"2nd time founder building AI-first biz | AI Operated Business","titles":[],"score":0},
+  {"handle":"@fawziammache","name":"Fawzi Ammache","url":"https://www.tiktok.com/@fawziammache","followers":121300,"avg_views":0,"last_post_days":null,"email":null,"bio":"Designer & Engineer | Explaining AI simply 🤖 | year2049.com","titles":[],"score":0},
+  {"handle":"@alliekmiller","name":"Allie K. Miller","url":"https://www.tiktok.com/@alliekmiller","followers":99000,"avg_views":0,"last_post_days":null,"email":null,"bio":"CEO Open Machine | Fortune 500 AI Advisor | Former Amazon IBM","titles":[],"score":0},
+  {"handle":"@ceozita","name":"Zita","url":"https://www.tiktok.com/@ceozita","followers":75700,"avg_views":0,"last_post_days":null,"email":null,"bio":"AI content creation & monetization | How to earn $1 per follower","titles":[],"score":0},
+  {"handle":"@angelica_automates","name":"Angelica Greenwood","url":"https://www.tiktok.com/@angelica_automates","followers":58300,"avg_views":0,"last_post_days":null,"email":null,"bio":"Founder: Social by Greenwood Apps | Automating Print on Demand","titles":[],"score":0},
+  {"handle":"@chatgptforme","name":"Dylan Watkins","url":"https://www.tiktok.com/@chatgptforme","followers":53800,"avg_views":0,"last_post_days":null,"email":null,"bio":"I help entrepreneurs save time and make money with AI automation","titles":[],"score":0},
+  {"handle":"@aiotexpert","name":"John Soldatos","url":"https://www.tiktok.com/@aiotexpert","followers":27300,"avg_views":0,"last_post_days":null,"email":null,"bio":"ECE PhD | 30Y Experience | 100+ projects | AI/IoT Expert","titles":[],"score":0},
+  {"handle":"@nicoleleffer","name":"Nicole Leffer","url":"https://www.tiktok.com/@nicoleleffer","followers":13600,"avg_views":0,"last_post_days":null,"email":null,"bio":"CMO AI Advisor | Teach B2B marketing teams how to use ChatGPT","titles":[],"score":0},
+  {"handle":"@dudeongpt","name":"Dude on GPT","url":"https://www.tiktok.com/@dudeongpt","followers":130000,"avg_views":0,"last_post_days":null,"email":null,"bio":"ChatGPT and AI tools tips | 30% US audience | high engagement 13.65%","titles":[],"score":0},
+  {"handle":"@whatsnextai","name":"What's Next AI","url":"https://www.tiktok.com/@whatsnextai","followers":44000,"avg_views":0,"last_post_days":null,"email":null,"bio":"AI news and tools | US+UK audience | 43% US","titles":[],"score":0},
+  {"handle":"@gregoire_r","name":"Gregoire","url":"https://www.tiktok.com/@gregoire_r","followers":70000,"avg_views":0,"last_post_days":null,"email":null,"bio":"Photographer | AI / Travel / Music / Street","titles":[],"score":0},
+  {"handle":"@liamottleytiktoks","name":"Liam Ottley","url":"https://www.tiktok.com/@liamottleytiktoks","followers":180000,"avg_views":0,"last_post_days":null,"email":null,"bio":"Building AI automation agencies and sharing free courses on AI-powered app building","titles":["This Guy Just Dropped A FREE 2hr Course On How To Build Apps using AI","AI Automation Agency breakdown","How I built my first AI product"],"score":0},
+  {"handle":"@createwithsean","name":"Creator Sean","url":"https://www.tiktok.com/@createwithsean","followers":90000,"avg_views":0,"last_post_days":null,"email":null,"bio":"AI content creator coach - tutorials on AI-enhanced video creation","titles":["How to use AI to 10x your content","Best AI tools for TikTok creators","Create AI-enhanced short videos"],"score":0},
+  {"handle":"@stopheathertime","name":"Heather Zink","url":"https://www.tiktok.com/@stopheathertime","followers":61000,"avg_views":0,"last_post_days":null,"email":null,"bio":"US-based creator featured on AI influencer lists","titles":["AI tools for creators","How I use AI to automate my content workflow"],"score":0},
+  {"handle":"@mattupham","name":"Matt Upham","url":"https://www.tiktok.com/@mattupham","followers":498500,"avg_views":0,"last_post_days":null,"email":null,"bio":"AI Tech and Coding Software Dev - makes tutorials on AI tools and coding for developers","titles":["AI Tools Every Developer Should Know","How to Use ChatGPT for Coding","AI vs Traditional Software Dev"],"score":0},
+  {"handle":"@rooshtech","name":"Ahmad Ali","url":"https://www.tiktok.com/@rooshtech","followers":410000,"avg_views":0,"last_post_days":null,"email":null,"bio":"Tech AI tutorials and reviews - easy to understand tech and AI content","titles":["AI News This Week","Best AI Tools 2025 Review","How to Use AI for Everyday Tasks"],"score":0},
+  {"handle":"@alberta.nyc","name":"Alberta","url":"https://www.tiktok.com/@alberta.nyc","followers":154000,"avg_views":0,"last_post_days":null,"email":null,"bio":"Software engineer doing tech comedy and AI hot takes","titles":["AI Hot Takes You Needed to Hear","When AI Gets It Wrong","Software Engineer Reacts to AI Hype"],"score":0},
+  {"handle":"@benkaluza","name":"Ben Kaluza","url":"https://www.tiktok.com/@benkaluza","followers":0,"avg_views":0,"last_post_days":null,"email":null,"bio":"Creator Resources - AI tools tutorials for content creators","titles":["Best AI Tools For Content Creators","AI for TikTok Growth","Creator AI Workflow"],"score":0},
+  {"handle":"@samdespo","name":"Sam Despo","url":"https://www.tiktok.com/@samdespo","followers":0,"avg_views":0,"last_post_days":null,"email":null,"bio":"AI and Marketing - TikTok growth using AI tools","titles":["TikTok Free AI Tool for Viral Content","AI Marketing Strategy 2025","Use AI to Get More Views"],"score":0}
+];
+
+// Sort state
+let sortKey = 'score';
+let sortDir = -1;
+let filtered = [...RAW];
+
+function fmt(n) {
+  if (n == null || n === 0) return '<span class="empty">—</span>';
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+  return n.toString();
+}
+
+function scoreClass(s) {
+  if (s >= 90) return 'score-90';
+  if (s >= 80) return 'score-80';
+  if (s >= 70) return 'score-70';
+  if (s >= 60) return 'score-60';
+  if (s >= 50) return 'score-50';
+  if (s >= 30) return 'score-30';
+  return 'score-0';
+}
+
+function renderStats() {
+  const total = RAW.length;
+  const withEmail = RAW.filter(r => r.email).length;
+  const topTier = RAW.filter(r => r.score >= 70).length;
+  const totalFollowers = RAW.reduce((a,b) => a + (b.followers||0), 0);
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-card"><div class="num">${total}</div><div class="lbl">Total Creators</div></div>
+    <div class="stat-card"><div class="num">${topTier}</div><div class="lbl">Score 70+</div></div>
+    <div class="stat-card"><div class="num">${withEmail}</div><div class="lbl">Has Email</div></div>
+    <div class="stat-card"><div class="num">${fmt(totalFollowers)}</div><div class="lbl">Total Followers</div></div>
+  `;
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  const noRes = document.getElementById('noResults');
+  document.getElementById('countBadge').textContent = `${filtered.length} creators`;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    noRes.style.display = 'block';
+    return;
+  }
+  noRes.style.display = 'none';
+
+  tbody.innerHTML = filtered.map(r => {
+    const emailCell = r.email
+      ? `<a class="email-link" href="mailto:${r.email}">${r.email}</a>`
+      : `<span class="no-email">—</span>`;
+    const titlesCell = r.titles && r.titles.length
+      ? r.titles.map(t => `<span class="title-tag" title="${t}">${t}</span>`).join('')
+      : `<span class="empty">—</span>`;
+    const lastPost = (r.last_post_days != null && r.last_post_days > 0)
+      ? `<span style="color:#ffd666">${r.last_post_days}d ago</span>`
+      : (r.last_post_days === 0 ? '<span style="color:#ff7875">inactive?</span>' : '<span class="empty">—</span>');
+
+    return `
+      <tr>
+        <td class="handle"><a href="${r.url}" target="_blank" rel="noopener">${r.handle}</a></td>
+        <td class="name-cell">
+          <div class="name-main">${r.name}</div>
+          <div class="name-bio" title="${r.bio||''}">${r.bio||''}</div>
+        </td>
+        <td class="num-cell followers">${fmt(r.followers)}</td>
+        <td class="num-cell avg-views">${fmt(r.avg_views)}</td>
+        <td class="num-cell">${lastPost}</td>
+        <td>${emailCell}</td>
+        <td class="titles-cell">${titlesCell}</td>
+        <td class="num-cell"><span class="score-badge ${scoreClass(r.score)}">${r.score || '—'}</span></td>
+      </tr>`;
+  }).join('');
+}
+
+function applyFilter() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const minScore = parseInt(document.getElementById('minScore').value) || 0;
+  const emailF = document.getElementById('emailFilter').value;
+
+  filtered = RAW.filter(r => {
+    if (q) {
+      const haystack = `${r.handle} ${r.name} ${r.bio||''} ${r.email||''}`.toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    if (r.score < minScore) return false;
+    if (emailF === 'yes' && !r.email) return false;
+    if (emailF === 'no' && r.email) return false;
+    return true;
+  });
+
+  sortData();
+  renderTable();
+}
+
+function sortBy(key) {
+  if (sortKey === key) { sortDir *= -1; }
+  else { sortKey = key; sortDir = -1; }
+  // update header classes
+  document.querySelectorAll('thead th').forEach(th => th.classList.remove('sorted'));
+  const headers = ['handle','name','followers','avg_views','last_post_days',null,null,'score_total'];
+  const keys = ['handle','name','followers','avg_views','last_post_days',null,null,'score'];
+  const idx = keys.indexOf(key);
+  if (idx >= 0) document.querySelectorAll('thead th')[idx].classList.add('sorted');
+  sortData();
+  renderTable();
+}
+
+function sortData() {
+  filtered.sort((a, b) => {
+    let va = a[sortKey] ?? -1;
+    let vb = b[sortKey] ?? -1;
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    if (va < vb) return sortDir;
+    if (va > vb) return -sortDir;
+    return 0;
+  });
+}
+
+// Init
+sortData();
+renderStats();
+renderTable();
+</script>
+</body>
+</html>
